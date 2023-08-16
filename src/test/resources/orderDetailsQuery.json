@@ -1,0 +1,5 @@
+
+{
+	emailId :attributes.queryParams.emailId,
+	productTitle :attributes.queryParams.productTitle
+}

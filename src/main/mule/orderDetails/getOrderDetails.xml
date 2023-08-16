@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getOrderDetailsFlow" doc:id="2d739761-b6dc-417c-8d52-ad336eba8d0e" >
+		<ee:transform doc:name="Order Details Query" doc:id="092d92e2-84d5-4c62-9b80-acd57a6463cd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["select 	Name, customerId__c, items__c, order_date__c, payment_Mode__c, total_Price__c, status__c, deliverd_Date__c
+from orderDetails__c where Name = ':orderId'"
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="inputParameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	orderId :attributes.queryParams.orderId,
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Fetch Order Details From Salesforce" doc:id="70248502-94f5-4404-8315-edcc5fa74cd3" name="getDataFromSalesforce" />
+		<choice doc:name="Checking whether OrderDetails exists?" doc:id="ec15bad1-4f94-4e5d-88f4-735e3fd33e97" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="6095d55d-7a7b-47f9-9443-f389dac02845" message="Order Details with #[vars.parameters] Not Found" />
+				<raise-error doc:name="Order Not Found Error" doc:id="103620e2-d70e-42e2-8184-ab42275b2294" type="ERR:ORDER_NOT_FOUND" description="Order history doesn't exsist" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Fetched OrderDetails Response" doc:id="fdc0bc8a-5353-4b63-bc25-5996db77ae4a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	orderId: payload[0].Name default "",
+	Items: read(payload[0].items__c default "" as String,"application/json"),
+	customerId: payload[0].customerId__c default "",
+    Total_Price: payload[0].total_Price__c default "",
+    Order_Date: payload[0].order_date__c default "",
+    Payment_Mode: payload[0].payment_Mode__c default "",
+    Status: payload[0].status__c default "",
+    (Delivered_Date: payload[0].deliverd_Date__c) if(payload[0].status__c == "Delivered")
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

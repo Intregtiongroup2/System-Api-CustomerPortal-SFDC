@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="orderDetailsGet" format="json">
+      <types:shape format="weave" example="examples/orderDetails.json"><![CDATA[%dw 2.0
+
+type orderDetailsGet = {|
+  emailId: String, 
+  productTitle: String, 
+  dateOfPurchase: String, 
+  quantity: String, 
+  status: String, 
+  location: String
+|} {"example": "{\\\"emailId\\\":\\\"anichakraborty0007@gmail.com\\\",\\\"productTitle\\\":\\\"Redmi-Note-10s-4GB-RAM-64GB-ROM\\\",\\\"dateOfPurchase\\\":\\\"28.06.2023\\\",\\\"quantity\\\":\\\"1.0\\\",\\\"status\\\":\\\"Booked\\\",\\\"location\\\":\\\"Mumbai\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="orderDetailsPost" format="json">
+      <types:shape format="weave" example="examples/orderPost.json"><![CDATA[%dw 2.0
+
+type orderDetailsPost = {|
+  emailId: String, 
+  productTitle: String, 
+  dateOfPurchase: String, 
+  quantity: Number {"typeId": "int"}, 
+  price: Number {"typeId": "int"}, 
+  status: String, 
+  location: String
+|} {"example": "{\\\"emailId\\\":\\\"rishavdutta@gmail.com\\\",\\\"productTitle\\\":\\\"Redmi-Note-10s-4GB-RAM-64GB-ROM\\\",\\\"dateOfPurchase\\\":\\\"13-06-2022\\\",\\\"quantity\\\":1,\\\"price\\\":18500,\\\"status\\\":\\\"Booked\\\",\\\"location\\\":\\\"Kolkata\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="orderDetailsPut" format="json">
+      <types:shape format="weave" example="examples/orderDetailsPut.json"><![CDATA[%dw 2.0
+
+type orderDetailsPut = {|
+  feedback: String, 
+  complaint: String, 
+  status: String
+|} {"example": "{\\\"feedback\\\":\\\"\\\",\\\"complaint\\\":\\\"Product not responding\\\",\\\"status\\\":\\\"Booked\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="orderDetailsQuery" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#0feaf2bc-65f9-4410-b63f-2fac94465709">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="orderDetailsGet"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#0db9973c-1df9-4c9b-86d1-252440d74d3a">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="orderDetailsPost"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#6fbc8975-f154-4dcb-9106-c19ddf68e565">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="parameters" type="null"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#2c885c14-06a0-445f-8b6f-2bc9f249c3ca"/>
+</types:mule>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+    <http:listener-config name="sys-cp-sfdc-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${https.port}" protocol="HTTPS" readTimeout="${https.readTimeout}" connectionIdleTimeout="${https.readTimeout}">
+			<tls:context >
+				<tls:key-store type="${tls.keyStoreType}" path="${tls.keyPath}" alias="${tls.alias}" keyPassword="${secure::tls.keypass}" password="${secure::tls.pass}" />
+			</tls:context>
+		</http:listener-connection>
+    </http:listener-config>
+    <apikit:config name="sys-cp-sfdc-config" api="sys-cp-sfdc.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="get:\customers:sys-cp-sfdc-config">
+        <flow-ref doc:name="getCustomerDetailsFlow" doc:id="1b8ce170-398a-4cb2-9cb6-dd4c5bcafe92" name="getCustomerDetailsFlow" />
+    </flow>
+    <flow name="post:\customers:application\json:sys-cp-sfdc-config" doc:id="42f83125-a342-45bd-a504-50c0343ad77f">
+        <flow-ref doc:name="addCustomerDetailsFlow" doc:id="596e4d46-6cec-4dac-9dd2-d6475fa6bf88" name="addCustomerDetailsFlow" />
+    </flow>
+    <flow name="put:\customers:application\json:sys-cp-sfdc-config">
+        <flow-ref doc:name="updateCustomerDetailsFlow" doc:id="6b6d099c-00da-4a5f-bfb2-ef9e7f65c13d" name="updateCustomerDetailsFlow" />
+    </flow>
+    <flow name="get:\products:sys-cp-sfdc-config">
+        <flow-ref doc:name="getProductDetailsFlow" doc:id="6265f852-c073-47ea-8062-4ec665dd81da" name="getProductDetailsFlow" />
+    </flow>
+    <flow name="put:\products:application\json:sys-cp-sfdc-config">
+        <flow-ref doc:name="updateProductsDetailsFlow" doc:id="9265976e-713c-4632-a1c5-492f280eca17" name="updateProductsDetailsFlow" />
+    </flow>
+    <flow name="get:\orderDetails:sys-cp-sfdc-config">
+        <flow-ref doc:name="getOrderDetailsFlow" doc:id="e4bb6e58-57a4-44da-8a6d-d93bcb8e7177" name="getOrderDetailsFlow" />
+    </flow>
+    <flow name="post:\orderDetails:application\json:sys-cp-sfdc-config">
+        <flow-ref doc:name="createOrderDetailsFlow" doc:id="99209712-a457-4673-a8b3-f6add1eed3ed" name="createOrderDetailsFlow" />
+    </flow>
+    <flow name="put:\orderDetails:application\json:sys-cp-sfdc-config">
+        <flow-ref doc:name="addComplaintAndFeedbackFlow" doc:id="2df24600-c4cb-4150-8df8-7474c32e2210" name="addComplaintAndFeedbackFlow" />
+    </flow>
+    <flow name="get:\cart:sys-cp-sfdc-config">
+		<flow-ref doc:name="getCartDetailsFlow" doc:id="971c1508-ea33-44fe-9fd6-9d2ae6974517" name="getCartDetailsFlow"/>
+    </flow>
+    <flow name="post:\cart:application\json:sys-cp-sfdc-config">
+		<flow-ref doc:name="postCartDetailsFlow" doc:id="c46f4967-7e85-4631-aea8-ea8c9e32f20e" name="postCartDetailsFlow"/>
+    </flow>
+	<flow name="put:\cart:application\json:sys-cp-sfdc-config">
+		<flow-ref doc:name="putCartDetailsFlow" doc:id="c46fa266-c55f-4d02-bb16-cb428a35d0cf" name="putCartDetailsFlow"/>
+    </flow>
+	<flow name="get:\complaint:sys-cp-sfdc-config">
+		<flow-ref doc:name="getComplaintDetailsFlow" doc:id="9d0d32b5-c1f9-43fa-84c1-5ffd7ee35168" name="getComplaintDetailsFlow"/>
+    </flow>
+	<flow name="post:\complaint:application\json:sys-cp-sfdc-config">
+		<flow-ref doc:name="addComplaintFlow" doc:id="cba0299a-d552-46f6-ac09-b441a3d7b293" name="addComplaintFlow"/>
+    </flow>
+	<flow name="put:\complaint:application\json:sys-cp-sfdc-config">
+		<flow-ref doc:name="addComplaintFlow" doc:id="5fdc00fe-945d-4277-ade5-a434bbf85841" name="closeComplaintFlow"/>
+    </flow>
+	<flow name="get:\enquiry:sys-cp-sfdc-config">
+        <flow-ref doc:name="getEnquiryFlow" doc:id="176e6491-d7fd-4f65-8595-49b790d808b2" name="getEnquiryFlow" />
+    </flow>
+	<flow name="post:\enquiry:application\json:sys-cp-sfdc-config">
+        <flow-ref doc:name="createEnquiryFlow" doc:id="e25d5622-819f-4aed-a04c-2179049e852f" name="createEnquiryFlow" />
+    </flow>
+	<flow name="delete:\enquiry:sys-cp-sfdc-config" doc:id="825959bf-0c94-465c-9f8f-cf0665039627" >
+		<flow-ref doc:name="deleteEnquiryFlow" doc:id="b40209eb-2ceb-4269-8785-d77f762f5de1" name="deleteEnquiryFlow"/>
+	</flow>
+</mule>

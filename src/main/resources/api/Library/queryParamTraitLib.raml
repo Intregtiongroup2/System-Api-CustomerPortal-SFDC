@@ -1,0 +1,82 @@
+#%RAML 1.0 Library
+
+traits:      
+  customerquaryparam:
+    queryParameters:
+      customerId:
+        required: true
+        type: string
+        minLength: 7
+        
+  productquaryparam:
+    queryParameters:
+      productTitle:
+        required: false
+        type: string
+
+  productputquaryparams:
+    queryParameters:
+      productTitle:
+        required: true
+        type: string
+      location:
+        required: true
+        enum: [Kolkata, Bangalore, Hyderabad,Mumbai]
+
+  cartquaryparam:
+    queryParameters:
+      emailId:
+        required: false
+        type: string
+        minLength: 7
+      customerId:
+        required: false
+        type: string
+        minLength: 7 
+
+
+  orderquaryparams:
+    queryParameters:
+      orderId:
+        required: true
+        type: string
+        minLength: 7
+
+
+  enquiryquaryparams:
+    queryParameters:
+      productTitle:
+        type: string
+        required: true
+      emailId:
+        type: string
+        required: false
+        minLength: 5 
+
+  enquiryDeletequaryparams:
+    queryParameters:
+      enquiryId:
+        type: string
+        required: true
+
+
+  complaintgetqueryparams:
+    queryParameters:
+      complaintId:
+        type: string
+        required: false
+        minLength: 5
+      orderId:
+        required: false
+        type: string
+        minLength: 7 
+      productTitle:
+        type: string
+        required: false
+
+  complaintputqueryparams:
+    queryParameters:
+      complaintId:
+        type: string
+        required: true
+        minLength: 5   

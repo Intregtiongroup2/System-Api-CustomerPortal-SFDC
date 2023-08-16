@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getComplaintDetailsFlow" doc:id="507e297b-266e-4736-b7d3-2e44a9ed09b4">
+		<choice doc:name="Complaint or (orderId &amp; productTitle) ?" doc:id="ff8c0786-986c-4d26-a4a7-989e7ae42eef">
+			<when expression="#[!isEmpty(attributes.queryParams.complaintId) == true]">
+				<ee:transform doc:name="Complaint Details Query bases on complaintId" doc:id="7a774654-286a-4519-b523-251e0ff3cd76">
+					<ee:message>
+						<ee:set-payload><![CDATA["select Name, customerId__c, date_of_complaint__c, description__c, complaint_category__c, status__c, action__c,productTitle__c, quantity__c, orderId__c 
+from complaint__c where Name = ':complaintId'"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+---
+{
+	complaintId : attributes.queryParams.complaintId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression="#[(!(isEmpty(attributes.queryParams.orderId)) and !(isEmpty(attributes.queryParams.productTitle))) == true]">
+				<ee:transform doc:name="Complaint Details Query based on productTitle &amp; orderId" doc:id="c5c0503d-7e24-4bb6-af34-8e30a5401394">
+					<ee:message>
+						<ee:set-payload><![CDATA["select Name, customerId__c, date_of_complaint__c, description__c, complaint_category__c, status__c, action__c,productTitle__c, quantity__c, orderId__c 
+from complaint__c where orderId__c = ':orderId' and productTitle__c = ':productTitle' "]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+---
+{
+	orderId : attributes.queryParams.orderId,
+	productTitle: attributes.queryParams.productTitle
+	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="ERR:INVALID_COMPLAINT_QUERY_PARAM" doc:id="41494a27-b673-412b-90ba-4e6d91994a04" type="ERR:INVALID_COMPLAINT_QUERY_PARAM" description="Either provide Complaint Id or (ProductTitle and orderId) both" />
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Fetch Complaint Details from Salesforce" doc:id="f891f16e-4764-4c3a-ba76-5d4b2fc3e5a2" name="getDataFromSalesforce" />
+		<choice doc:name="Checking whether Complaint details Present ?" doc:id="e13e6bff-fc31-4d07-95d3-2f9267941a6b">
+					<when expression="#[sizeOf(payload) == 0]">
+						<logger level="ERROR" doc:name="Logging Error Message" doc:id="55d02482-348e-4ead-9a1a-108cef60d3dc" message="&quot;Complaint Details with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;" />
+						<raise-error doc:name="Complaint Not Found" doc:id="7def8fca-da86-4033-ba07-0ffdae256638" type="ERR:COMPLAINT_NOT_FOUND" description="Complaint Details Not Found" />
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Complaint Details Response" doc:id="f5853120-be84-45fe-a8e7-24db46c0ee34">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	complaintId: payload[0].Name,
+	date_of_complaint: payload[0].date_of_complaint__c default "",
+	orderId: payload[0].orderId__c default "",
+	customerId: payload[0].customerId__c default "",
+	productTitle: payload[0].productTitle__c default "",
+	quantity: payload[0].quantity__c as Number default "",
+	complaint_category: payload[0].complaint_category__c default "",
+	description: payload[0].description__c default "",
+	status: payload[0].status__c default "",
+	action: payload[0].action__c default ""
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+	</flow>
+</mule>
