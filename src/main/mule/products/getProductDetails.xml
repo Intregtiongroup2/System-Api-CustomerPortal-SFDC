@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getProductDetailsFlow" doc:id="0a0b9ee4-a088-4d0f-a803-c08c76a0cdcb" >
+		<choice doc:name="Checking whether fetch all  product details or specific product details ?" doc:id="6469385d-d21e-49be-ab39-ec3505b07281" >
+			<when expression="#[!isEmpty(attributes.queryParams.productTitle)]" >
+				<ee:transform doc:name="Specific product details query" doc:id="57350b29-2eb8-4a05-82fa-0521b030095a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA["select Name, productTitle__c,brandName__c, seriesName__c, price__c, ram__c, rom__c, warranty__c, quantity__c, location__c
+from ProductData__c where productTitle__c = ':productTitle'"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="inputParameters" ><![CDATA[output application/java
+---
+{
+	productTitle : attributes.queryParams.productTitle
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="Fetch Specific Product Details From Salesforce" doc:id="4a3f477f-63f1-4589-86a9-f64f001f1301" name="getDataFromSalesforce" />
+				<choice doc:name="Checking whether Product details exists?" doc:id="eb728a3a-712d-4bad-a06e-a9ad5707f435" >
+					<when expression="#[sizeOf(payload) == 0]" >
+						<logger level="ERROR" doc:name="Logging Error Message" doc:id="e344319f-5552-4426-b0de-0256572c0a0b" message="&quot;Product Details with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;" />
+						<raise-error doc:name="Product Not Found" doc:id="a0357f49-1df3-462e-ace4-8c1c34e90a1d" type="ERR:PRODUCT_NOT_FOUND" description="ProductTitle is not Correct" />
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Specific Product Details Response" doc:id="fa156852-e2d2-4895-9427-64776775ce07" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	productTitle: payload01.productTitle__c default "",
+	brandName: payload01.brandName__c default "",
+	seriesName: payload01.seriesName__c default "",
+	ram: payload01.ram__c default "",
+	rom: payload01.rom__c default "",
+	price: payload01.price__c as Number,
+	warranty: payload01.warranty__c default "",
+	quantity: payload01.quantity__c as Number,
+	location: payload01.location__c default ""
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="All specific product details query" doc:id="f55b6e71-5a1f-4340-adc7-9f4a323dfadd" >
+					<ee:message >
+						<ee:set-payload ><![CDATA["select Name, productTitle__c,brandName__c, seriesName__c, price__c
+from ProductData__c"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables />
+				</ee:transform>
+				<flow-ref doc:name="Fetch All Unique Products From Salesforce" doc:id="03b2eac7-7da4-4df9-a96c-420b69ac9a25" name="getDataFromSalesforce" />
+				<ee:transform doc:name="All product details response" doc:id="f0e1edf7-6b84-4e0b-bb69-bfd8ef83fb87" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	"Product_Title": $.productTitle__c default "",
+	"Brand_Name": $.brandName__c default "",
+	"Series_Name": $.seriesName__c default "",
+	"Price": $.price__c as Number
+} distinctBy $.Product_Title]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

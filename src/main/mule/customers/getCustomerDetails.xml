@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<flow name="getCustomerDetailsFlow" doc:id="8c9a0a0f-784e-4657-9011-544878c85e43">
+		<ee:transform doc:name="Customer Details Query" doc:id="c3042038-dc67-4b23-98bf-f3a0d512f544" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["select Name, emailId__c, firstName__c, lastName__c, gender__c, address__c, pincode__c, phoneNumber__c, location__c, cardDetails__c 
+from CustomerDetails__c where Name = ':customerId'"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="inputParameters" ><![CDATA[output application/java
+---
+{
+	customerId : attributes.queryParams.customerId
+}]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Fetch Customer Details from Salesforce" doc:id="2ec7be1f-9e47-42f4-822d-f6fae0a03efe" name="getDataFromSalesforce" />
+		<choice doc:name="Checking whether Customer details Present ?" doc:id="59d46c0d-e5cb-4b71-b285-fc64f8505e6d">
+			<when expression="#[sizeOf(payload) == 0]">
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="2d025d3c-8d23-4dd5-b644-b44f2b87df40" message="&quot;Customer Details with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;"/>
+				<raise-error doc:name="Customer Not Found" doc:id="9c9eded5-9faa-423d-aabc-7677ab2083be" type="ERR:CUSTOMER_NOT_FOUND" description="Customer Details Not Found" />
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Customer Details Response" doc:id="3d1f8e1b-bf18-4d38-ab08-931ac4ccb429">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerId: payload[0].Name,
+	emailId: payload[0].emailId__c default "",
+	firstName: payload[0].firstName__c default "",
+	lastName: payload[0].lastName__c default "",
+	gender: payload[0].gender__c default "",
+	address: payload[0].address__c default "",
+	pincode: payload[0].pincode__c default "",
+	phoneNumber: payload[0].phoneNumber__c default "",
+	location: payload[0].location__c default "",
+	savedCards: read(payload[0].cardDetails__c)
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	</mule>

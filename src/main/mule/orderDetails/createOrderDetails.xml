@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="createOrderDetailsFlow" doc:id="a554bf12-d2bd-4345-8a2b-15822c209b40" >
+		<ee:transform doc:name="New Order Details Information" doc:id="29e124a5-584f-409d-b0a5-6b264907af51" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	items__c: write(payload.Items,'application/json'),
+	customerId__c: payload.customerId,
+	payment_Mode__c: payload.Payment_Mode,
+	order_date__c: payload.Order_Date as String {format: "y-MM-dd"},
+	status__c: payload.Status,
+	total_Price__c: payload.Total_Price
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["OrderDetails__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Create Order Details In Salesforce" doc:id="54767965-542a-4e3c-8746-01d4fd73cfad" name="addDataInSalesforce" />
+		<ee:transform doc:name="Add OrderDetails Response" doc:id="17c79739-b4e2-4e3b-b588-c4426ea2f41d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	("message" : "OrderDetails Added Successfully your orderId is :" ++ payload..payload.id[0] as String ) if(payload.successful==true),
+	("message" : "Some Error Occur, Try Again!") if(payload.successful==false)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

@@ -1,0 +1,148 @@
+#%RAML 1.0
+title: sys-cp-sfdc
+
+version: v1.0.0
+
+protocols:
+  - HTTPS
+  
+mediaType: 
+- application/json
+
+traits:
+  basicAuth: !include traits/client-id-enforcement.raml
+
+uses:
+  resourceTypeLib: Library/resourceTypeLib.raml
+  queryParamLib: Library/queryParamTraitLib.raml
+  dataTypesLib: Library/dataTypesLibrary.raml
+
+description: System API for interacting with salesforce account
+
+/customers:
+  is: [basicAuth]
+  get:
+    description: Fetch the details of customers
+    is: [queryParamLib.customerquaryparam]
+  post:
+    description: Add New Customer details
+  put:
+    description: Edit existing customer details like Address ,pincode,phone-number etc  
+    is: [queryParamLib.customerquaryparam ]                 
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType: dataTypesLib.customerDataType
+      getResponseExample: !include examples/customerGetDetailsExample.raml 
+      postRequestType:  dataTypesLib.customerDataType
+      postrequestExample: !include examples/customerPostDetailsExample.raml
+      postResponseExample: !include examples/customerPostResponseExample.raml
+      putRequestType:  dataTypesLib.customerPutdataType
+      putRequestExample: !include examples/customerPutExample.raml
+      putResponseExample: !include examples/putExampleResponse.raml
+
+/cart:
+  is: [basicAuth]
+  get:
+    description: Fetch cart details
+    is: [queryParamLib.cartquaryparam]
+  post:
+    description: Create new Cart
+  put:
+    description: Update Items in the existing cart and total_cart_amount 
+    is: [queryParamLib.cartquaryparam]
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType: dataTypesLib.cartDataType
+      getResponseExample: !include examples/cartGetResponseExample.raml
+      postRequestType: dataTypesLib.cartDataType
+      postrequestExample: !include examples/cartPostRequestExample.raml
+      postResponseExample: !include examples/cartPostResponseExample.raml
+      putRequestType: dataTypesLib.cartPutDataType
+      putRequestExample: !include examples/cartPutRequestExample.raml
+      putResponseExample: !include examples/putExampleResponse.raml
+
+/products:
+  is: [basicAuth]
+  get:
+    description: Fetch Products details
+    is: [queryParamLib.productquaryparam]
+  put:
+    description: Update existing Products details like quantity, price.
+    is: [queryParamLib.productputquaryparams]
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType: dataTypesLib.productDataType[]
+      getResponseExample: !include examples/ProductResponseExample.raml
+      putRequestType: dataTypesLib.productPutDataType
+      putRequestExample: !include examples/productPutExample.raml
+      putResponseExample: !include examples/putExampleResponse.raml
+
+      
+/orderDetails:
+  is: [basicAuth]
+  get:
+    description: fetch the order details
+    is: [queryParamLib.orderquaryparams]
+  post:
+    description: Add New Order details
+  put:
+    description: add feedback for existing customer
+    is: [queryParamLib.orderquaryparams]
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType:  dataTypesLib.orderDataType
+      getResponseExample: !include examples/orderGetResponse.raml
+      postRequestType: dataTypesLib.orderDataType
+      postrequestExample: !include examples/orderPostRequest.raml
+      postResponseExample: !include examples/orderPostResponseExample.raml
+      putRequestType: dataTypesLib.orderPutDataType
+      putRequestExample: !include examples/orderPutRequest.raml
+      putResponseExample: !include examples/orderPutResponseExample.raml
+
+/enquiry:
+  is: [basicAuth]
+  get:
+    description: To fetch Enquiry details
+    is: [queryParamLib.enquiryquaryparams]
+  post:  
+    description: Add New Enquiry details
+
+  delete:
+    description: Delete Enquiry details when item is available
+    is: [queryParamLib.enquiryDeletequaryparams]
+  type:
+    resourceTypeLib.salesforce-resource-type:
+     getResponseType: dataTypesLib.enquiryDataType
+     getResponseExample: !include examples/enquiryGetResponseExample.raml
+     postRequestType: dataTypesLib.enquiryDataType
+     postrequestExample: !include examples/enquiryPostRequestExample.raml
+     postResponseExample: !include examples/enquiryPostResponseExample.raml
+     deleteResponseExample: !include examples/deleteResponseExample.raml
+
+/complaint:
+  is: [basicAuth]
+  get:
+    description: To fetch complaint details
+    is: [queryParamLib.complaintgetqueryparams]
+  post:
+    description: Add New complaint
+  put:
+    description: To update complaint status
+    is: [queryParamLib.complaintputqueryparams]
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType: dataTypesLib.complaintGetDataType
+      getResponseExample: !include examples/complaintGetResponseExample.raml
+      postRequestType: dataTypesLib.complaintPostDataType
+      postrequestExample: !include examples/complaintPostRequestExample.raml
+      postResponseExample: !include examples/complaintPostResponseExample.raml
+      putRequestType: dataTypesLib.complaintPutDataType
+      putRequestExample: !include examples/complaintPutRequestExample.raml
+      putResponseExample: !include examples/complaintPutResponseExample.raml
+/ping:
+  description: To check the status of Api 
+  get:
+  type:
+    resourceTypeLib.salesforce-resource-type:
+      getResponseType: dataTypesLib.healthCheckDataType
+      getResponseExample: !include examples/healthCheckResponse.raml

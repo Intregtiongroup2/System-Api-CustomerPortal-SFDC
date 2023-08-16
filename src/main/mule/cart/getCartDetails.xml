@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getCartDetailsFlow" doc:id="734a98a4-d3d1-4327-989c-c209e9b24ce2" >
+		<choice doc:name="Check whether customerId or emailId present?" doc:id="cc74fce9-3584-4d9f-8f00-da4b32b7f1b2" >
+			<when expression="#[!isEmpty(attributes.queryParams.emailId)== true]">
+				<ee:transform doc:name="Cart Details Query based on emailId" doc:id="c1f237a2-af09-4cb0-8df1-a246704e3b48">
+			<ee:message>
+				<ee:set-payload><![CDATA["select customerId__c, customerEmail__c, Items__c, Nearest_Db_Location__c, Total_Amount__c  from cartDetails__c 
+where customerEmail__c = ':emailId'"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+---
+{
+	emailId : attributes.queryParams.emailId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			</when>
+			<when expression="#[!isEmpty(attributes.queryParams.customerId)== true]">
+				<ee:transform doc:name="Cart Details Query based on customerId" doc:id="8cd84ce2-8b50-4223-9238-bc438502837e">
+					<ee:message>
+						<ee:set-payload><![CDATA["select customerEmail__c, customerId__c, Items__c, Nearest_Db_Location__c, Total_Amount__c  from cartDetails__c 
+where customerId__c = ':customerId'"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+---
+{
+	customerId : attributes.queryParams.customerId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Cart Details Query to get all carts" doc:id="2c885c14-06a0-445f-8b6f-2bc9f249c3ca" >
+					<ee:message >
+						<ee:set-payload ><![CDATA["select customerEmail__c, customerId__c, Items__c, Nearest_Db_Location__c, Total_Amount__c  from cartDetails__c "]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Fetch Cart Details from Salesforce" doc:id="117485fd-259f-4b56-a87a-642c4fff4959" name="getDataFromSalesforce" />
+		<choice doc:name="Checking whether Cart details Present ?" doc:id="6b422ec8-8ac8-49e2-8457-7ea5a1361f41" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="d5db72e3-a2cf-4d20-8568-593084af9d27" message="&quot;Customer Details with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;" />
+				<raise-error doc:name="Cart Not Found" doc:id="66f110d3-779d-49cb-9ae2-9dfab8fd4784" type="ERR:CART_NOT_FOUND" description="Customer cart does not exists" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Cart Details Response" doc:id="d91b4624-7132-46ec-b081-27576ecc4b28" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if ( sizeOf(payload) == 1 ) {
+	(customerId: payload[0].customerId__c) if(payload[0].customerId__c != null),
+	(customerEmail: payload[0].customerEmail__c) if(payload[0].customerEmail__c != null),
+	Items: read(payload[0].Items__c, 'application/json'),
+	Nearest_Db_Location: payload[0].Nearest_Db_Location__c,
+	Total_Amount: payload[0].Total_Amount__c as Number
+}
+else
+	(payload map {
+	(customerId: $.customerId__c) if($.customerId__c != null),
+	(customerEmail: $.customerEmail__c) if($.customerEmail__c != null),
+	Items: read($.Items__c, 'application/json'),
+	Nearest_Db_Location: $.Nearest_Db_Location__c,
+	Total_Amount: $.Total_Amount__c as Number
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

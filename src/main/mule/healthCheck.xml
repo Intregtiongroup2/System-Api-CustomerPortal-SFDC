@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="get:\ping:sys-cp-sfdc-config">
+<!-- [STUDIO:"Scatter-Gather"]		<scatter-gather doc:name="Scatter-Gather" doc:id="a026b46b-f6e2-4cee-865f-a06aa2243a57" >
+			<route >
+				<ee:transform doc:name="Order Details Query" doc:id="ee188319-e94d-40d9-8eec-355c68122f6d">
+			<ee:message>
+				<ee:set-payload><![CDATA["select 	Name, customerId__c, items__c, order_date__c, payment_Mode__c, total_Price__c	, status__c
+from orderDetails__c where Name = ':orderId'"
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[%dw 2.0
+output application/java
+&#45;&#45;-
+{
+	orderId :"a055i00000RQsTS",
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="Flow Reference" doc:id="dd6658c2-49b8-4656-9389-f775ac188e2d" name="getDataFromSalesforce" target="service" targetValue="#[attributes]" />
+			</route>
+			<route >
+				<ee:transform doc:name="Enquiry based on ProductTitle Query" doc:id="b53294e4-4527-49bb-9fbc-d8eb6b7afec6">
+			<ee:message>
+				<ee:set-payload><![CDATA["select 	emailId__c, productTitle__c, quantity__c , Name
+from Enquiry__c where productTitle__c=':productTitle'"
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[%dw 2.0
+output application/java
+&#45;&#45;-
+{
+	productTitle :"SAMSUNG-A2-4GB-64GB",
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="Flow Reference" doc:id="1bea7fdb-e21e-4139-92b1-b661bf29917e" name="getDataFromSalesforce" target="service" targetValue="#[attributes]" />
+			</route>
+			<route >
+				<ee:transform doc:name="Customer Details Query" doc:id="282c72e7-bfe9-4b46-9c7f-3d7c3d589fb6">
+			<ee:message>
+				<ee:set-payload><![CDATA["select Name, emailId__c, firstName__c, lastName__c, gender__c, address__c, pincode__c, phoneNumber__c, location__c, cardDetails__c 
+from CustomerDetails__c where Name = ':customerId'"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+&#45;&#45;-
+{
+	customerId : "KOL_1002"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="Flow Reference" doc:id="cba8cd57-25aa-4be5-9d6c-075c4bc66429" name="getDataFromSalesforce" target="service" targetValue="#[attributes]" />
+			</route>
+			<route >
+				<ee:transform doc:name="Complaint Details Query bases on complaintId" doc:id="40d507dc-27d9-417f-a16f-32b9917c9438">
+			<ee:message>
+				<ee:set-payload><![CDATA["select Name, customerId__c, date_of_complaint__c, description__c, complaint_category__c, status__c, action__c,productTitle__c, quantity__c, orderId__c 
+from complaint__c where Name = ':complaintId'"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+&#45;&#45;-
+{
+	complaintId : "a000000"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="Flow Reference" doc:id="480984d4-c784-4417-8893-43133c775f7b" name="getDataFromSalesforce" target="service" targetValue="#[attributes]" />
+			</route>
+			<route >
+				<ee:transform doc:name="Cart Details Query" doc:id="94192f17-4c3c-4459-9fee-298b7115b997">
+			<ee:message>
+				<ee:set-payload><![CDATA["select customerEmail__c, Items__c, Nearest_Db_Location__c, Total_Amount__c  from cartDetails__c 
+where customerEmail__c = ':emailId'"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputParameters"><![CDATA[output application/java
+&#45;&#45;-
+{
+	emailId : "parthana@gmail.com"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="Flow Reference" doc:id="47074b9b-5cc5-4d89-8fe0-5909cfe4583b" name="getDataFromSalesforce" target="service" targetValue="#[attributes]" />
+			</route>
+		</scatter-gather> [STUDIO] -->
+<ee:transform doc:name="All specific product details query" doc:id="c65f847d-149d-4656-a682-b45608db3d03">
+			<ee:message>
+				<ee:set-payload><![CDATA["select Name, productTitle__c,brandName__c, seriesName__c, price__c
+from ProductData__c"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="116cf220-a22d-4b9c-ae0b-4abeb15a6276" name="healthCheckFlow"/>
+		<ee:transform doc:name="Transform Message" doc:id="4f3c929d-b121-4e5b-869c-12b725ed1399">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	apiName: "${app.name}",
+	apiVersion: "${api.version}",
+	server: "mule.server",
+	serviceHealth: {
+		serviceType: "salesforce",
+		(using ( status = if ( vars.dbError == null ) "UP" else "DOWN" ) {
+			status: status,
+			(message: "Alive") if ( vars.dbError == null ),
+			(message: "Off") if ( vars.dbError != null ),
+			
+			(status match {
+				case "DOWN" -> {
+					error: vars.dbError
+				}
+				else -> {
+				}
+			})
+		})
+	}
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+    
+</flow>
+	<flow name="healthCheckFlow" doc:id="83b51b1b-c289-4383-bfcd-d84f1cb56d4f" >
+		<try doc:name="Try" doc:id="9b5b3c12-59ee-42aa-90b9-cf3ad0d21240" >
+			<salesforce:query doc:name="Query" doc:id="16a12793-54f1-4fe0-91c3-7e092fbd3650" config-ref="Salesforce_Config">
+				<salesforce:salesforce-query><![CDATA[#[payload]]]></salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[vars.inputParameters]]]></salesforce:parameters>
+			</salesforce:query>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="68e6b8ac-c1d6-4c30-ad80-9ee098afae7d" >
+					<set-variable value="#[error.errorType.identifier]" doc:name="Set Variable" doc:id="7c6a9f7f-6e83-474a-9b29-df7e67d9f745" variableName="dbError" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</flow>
+	
+</mule>

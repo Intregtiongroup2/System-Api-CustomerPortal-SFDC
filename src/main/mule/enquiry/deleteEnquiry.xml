@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="deleteEnquiryFlow" doc:id="5dd42019-a145-4af3-b65c-e07a3a23d06d" >
+		<set-variable value="#[output application/java&#10;---&#10;[attributes.queryParams.enquiryId]]" doc:name="recordId" doc:id="94b2c982-1d22-4f6b-8a36-a1bfa50c5aa7" variableName="recordId"/>
+		<flow-ref doc:name="Delete  Enquiry Data In Salesforce" doc:id="6464e3ad-99fa-4965-9011-35638fd5c469" name="deleteDataInSalesforce"/>
+		<ee:transform doc:name="Enquiry Delete Response" doc:id="612d4f8f-c86c-429d-b799-f36de3c34811" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	("message" : "Enquiry Details Deleted Successfully") if(payload.successful==true),
+	("message" : "Enquiry Id does not found") if(payload.successful==false)
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload.successful==true) 200
+else 400]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

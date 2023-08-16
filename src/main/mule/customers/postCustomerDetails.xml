@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<flow name="addCustomerDetailsFlow" doc:id="eaed49c9-08ec-43b4-92b5-e8839e3cfb40">
+		<ee:transform doc:name="New Customer Details" doc:id="7526ff3f-b2d2-4a9d-af36-e4512e2786ab">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: payload.customerId,
+	address__c: payload.address,
+	emailId__c: payload.emailId,
+	firstName__c: payload.firstName,
+	lastName__c: payload.lastName,
+	gender__c: payload.gender,
+	location__c: payload.location,
+	pincode__c: payload.pincode,
+	phoneNumber__c: payload.phoneNumber,
+	cardDetails__c: write(payload.cardDetails,'application/json')
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["CustomerDetails__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+<flow-ref doc:name="Create New Customer in Salesforce" doc:id="fcab0fb6-b092-4a99-99fa-78d7d5966309" name="addDataInSalesforce"/>
+		<logger level="INFO" doc:name="Logging Message" doc:id="12c7a9a5-8192-46cf-a5b3-d4f1cf943ac3" message='#[if(payload.successful==true)("message" : "Customer Added Successfully") &#10;else ("message" : " Email ID Already Exists")]'/>
+		<ee:transform doc:name="Customer Create Response" doc:id="e734cb87-ec36-4dbb-aa4c-ffdfe9fdec41">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	("message" : "Customer Added Successfully") if(payload.successful==true),
+	("message" : "Email ID Already Exists") if(payload.successful==false)
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload.successful==true) 201
+else 400]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	</mule>

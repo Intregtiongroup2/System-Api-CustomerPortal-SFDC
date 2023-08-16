@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="updateCustomerDetailsFlow" doc:id="28caa83a-8f25-43ba-96ad-2e22678fbe44" >
+		<ee:transform doc:name="Customer Update Information" doc:id="55b209ab-46e3-4d07-9898-e34ee85ce33f">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	("address__c" : payload.address) if(!isEmpty(payload.address)),
+	("pincode__c": payload.pincode) if(!isEmpty(payload.pincode)),
+	("phoneNumber__c": payload.phoneNumber) if(!isEmpty(payload.phoneNumber)),
+	("cardDetails__c": write(payload.cardDetails,'application/json')) if(!isEmpty(payload.cardDetails)),
+	"Name" : attributes.queryParams.customerId
+}]]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="externalId"><![CDATA["Name"]]></ee:set-variable>
+						<ee:set-variable variableName="objectType"><![CDATA["CustomerDetails__c"]]></ee:set-variable>
+						<ee:set-variable variableName="parameters"><![CDATA[output application/java
+---
+{
+	customerId : attributes.queryParams.customerId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+		<flow-ref doc:name="Update Customer Details in Salesforce" doc:id="028d0060-a258-4b76-805b-86db0e80bfcb" name="updateDataInSalesforce" />
+		<choice doc:name="Checking whether Customer details updated ?" doc:id="7cc0f975-f559-430b-85eb-7f731570c28b" >
+			<when expression="#[payload.successful == true]" >
+				<ee:transform doc:name="Update successful response" doc:id="4d07cba0-35d9-4758-ae2f-ee9824db0718" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Customer Details updated Successfully"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="0f13a7b9-dd6f-4d73-be90-dfd338b56052" message="&quot;Customer Details with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;" />
+				<raise-error doc:name="Customer Not Present" doc:id="0e116136-2ad6-45c9-80a4-3beec3e80f0d" type="ERR:CUSTOMER_UPDATE_FAILED" description="Customer ID is not Present In the Database" />
+			</otherwise>
+		</choice>
+	</flow>
+	
+</mule>
