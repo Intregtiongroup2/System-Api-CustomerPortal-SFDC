@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="addComplaintAndFeedbackFlow" doc:id="19d1b96d-233a-480b-9ff5-265e86b4b0a7" >
+		<ee:transform doc:name="Order Details  Query" doc:id="da9900b6-47e6-41ea-baff-805aafc16841" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["select 	Name, customerId__c, items__c, order_date__c, payment_Mode__c, total_Price__c	, status__c, feedback__c
+from orderDetails__c where Name = ':orderId'"
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="updatepayload" ><![CDATA[%dw 2.0
+output application/json
+---
+[payload.feedback]]]></ee:set-variable>
+				<ee:set-variable variableName="inputParameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	orderId :attributes.queryParams.orderId
+}]]></ee:set-variable>
+				<ee:set-variable variableName="status" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.status]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Fetch OrderDetails Salesforce" doc:id="b021edad-faa9-410e-9707-0766564f665b" name="getDataFromSalesforce" />
+		<choice doc:name="Checking whether OrderDetails exists ?" doc:id="60073a00-6161-4344-8c20-3fb1143ffb82" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="OrderDetails and items" doc:id="8a643af5-d46d-4dbc-bcbd-4a269d3ddcc8">
+					<ee:message>
+					</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="items"><![CDATA[%dw 2.0
+output application/json
+---
+read(payload[0].items__c default "" as String,"application/json")]]></ee:set-variable>
+				<ee:set-variable variableName="feedback"><![CDATA[%dw 2.0
+output application/json
+---
+if(isEmpty(payload[0].feedback__c)) {
+	"feedback": {}
+}else{
+	"feedback": read(payload[0].feedback__c default "")
+}
+]]></ee:set-variable>
+			</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="f429cc98-55bd-4738-a2ca-1bdaf951b9c7" message="OrderDetails with #[vars.parameters] Not Found" />
+				<raise-error doc:name="Order Not Found Error" doc:id="8dc206da-8fb0-410e-b242-8c7eda6cb06d" type="ERR:ORDER_NOT_FOUND" description="Order history doesn't exsist" />
+			</otherwise>
+		</choice>
+		<choice doc:name="Checking whether to update feedback or status" doc:id="7f908cd9-7c66-4eb9-ade8-63a5f60b5e93" >
+			<when expression="#[vars.items..Product_Title contains  (vars.updatePayload.productTitle[0])]">
+				<ee:transform doc:name="New Feedback" doc:id="1bc12923-6865-493d-a4a8-f6bec422173d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+if(isEmpty(vars.feedback.feedback))
+{
+	"feedback": (vars.feedback.feedback) ++ {
+		((vars.updatePayload) map {
+			(($$ +0 +1) : $)if($.productTitle != null)
+		})
+	}
+}
+else	
+{
+	"feedback": (vars.feedback.feedback) ++ {
+		((vars.updatePayload) map {
+			(($$ +max(keysOf(vars.feedback.feedback)) as Number +1) : $)if($.productTitle != null)
+		})
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<ee:transform doc:name="Details To Update" doc:id="4f70cd39-42a5-45fd-ad41-6f7137bd75f9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	("feedback__c" : write(payload.feedback,'application/json')) if(!isEmpty(payload.feedback)),
+	("status__c": "Refund") if(!isEmpty(vars.updatePayload.complaint)),	
+	"Name" : vars.inputParameters.orderId
+}]]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="objectType" ><![CDATA["OrderDetails__c"]]></ee:set-variable>
+						<ee:set-variable variableName="externalId" ><![CDATA["Name"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression="#[(sizeOf(payload) &gt; 0) and (!isEmpty(vars.status))]">
+				<ee:transform doc:name="Details To Update" doc:id="00aa4f3e-c4d2-4b5a-a7a0-abd60962c40e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	("status__c": vars.status) if(!isEmpty(vars.status)),	
+	("deliverd_Date__c": now() as String {format:"y-MM-dd"}) if(vars.status == "Delivered"),
+	"Name" : vars.inputParameters.orderId
+}]]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="objectType" ><![CDATA["OrderDetails__c"]]></ee:set-variable>
+						<ee:set-variable variableName="externalId" ><![CDATA["Name"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Product Not purchased" doc:id="d5aa0073-b251-4f5a-adf0-20db07a739e1" type="ERR:ORDER_NOT_FOUND" description="Order history product doesn't exsist"/>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Update OrderDetails in Salesforce" doc:id="21c66b80-047c-48c1-9e8f-d1b208e6f26a" name="updateDataInSalesforce" />
+		<ee:transform doc:name="Response After Update" doc:id="7282e814-ae6e-4e0c-a773-81d0e89d96ab" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	("message" : "Product Feedback Successfully Added") if(payload.successful==true and (isEmpty(vars.status))),
+	("message" : "Order status Successfully Added") if(payload.successful==true and (!isEmpty(vars.status))),
+	("message" : "Some Error Occur, Try Again!") if(payload.successful==false)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

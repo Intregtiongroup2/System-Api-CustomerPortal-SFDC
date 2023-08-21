@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="addDataInSalesforce" doc:id="06258d71-7e96-4ef6-b728-8c7b1ce425a3" >
+		<try doc:name="Try" doc:id="fe0b487e-ac33-4b8b-ad10-82e3769c1019" >
+			<salesforce:create doc:name="Add Data in Salesforce" doc:id="52180a27-f5e0-47d9-8621-caff34895a3f" config-ref="Salesforce_Config" type="#[vars.objectType]" />
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e34fb758-1ed7-4e84-8715-3f937188cf82" type="ANY">
+					<flow-ref doc:name="backendErrorMsgFlow" doc:id="08f1706f-aa6f-44ce-9e01-fa530743787a" name="backendErrorMsgFlow"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="updateDataInSalesforce" doc:id="ed76b0ef-4693-4841-87d4-82dbaa28dc1f" >
+		<try doc:name="Try" doc:id="dc2f17e3-07fc-4294-9b81-3119b0438e5a" >
+			<salesforce:upsert doc:name="Update data in salesforce" doc:id="d78cc63d-ab72-49cd-b203-fa492eb675ab" config-ref="Salesforce_Config" objectType="#[vars.objectType]" externalIdFieldName="#[vars.externalId]" />
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="09ec100a-51ba-4fea-816b-9b4a2fd37a81" type="ANY">
+					<flow-ref doc:name="backendErrorMsgFlow" doc:id="8e154e35-26cb-4eaa-90fb-d22c5689b796" name="backendErrorMsgFlow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="getDataFromSalesforce" doc:id="acf2926c-faa8-4c09-ad80-7cf8eee1e842" >
+		<try doc:name="Try" doc:id="5487cc39-424b-42a9-8932-72e356d0d6ea" >
+			<salesforce:query doc:name="Fetch data from Salesforce" doc:id="bd195fbe-de4d-4c06-bcd9-a39d691f2c16" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[#[payload]]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[vars.inputParameters]]]></salesforce:parameters>
+		
+</salesforce:query>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="923faf4a-4cb9-4c45-82a8-c4f7d3134c2e" type="ANY">
+					<flow-ref doc:name="backendErrorMsgFlow" doc:id="91c56831-bc18-4853-b5a0-1d1f08863025" name="backendErrorMsgFlow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="deleteDataInSalesforce" doc:id="fc30af19-1a6d-463b-b566-bc579f3517cf">
+		<try doc:name="Try" doc:id="71e51b46-c65b-4889-b7be-371203cc2e80">
+			<salesforce:delete doc:name="Delete the Record" doc:id="38fcbdfd-28bd-4f15-864d-fb9addcbb957" config-ref="Salesforce_Config">
+			<salesforce:ids><![CDATA[#[vars.recordId]]]></salesforce:ids>
+		</salesforce:delete>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6994c325-00de-4257-aa8a-076cabdb0fc0" type="ANY">
+					<flow-ref doc:name="backendErrorMsgFlow" doc:id="f288097a-6865-44c8-849f-6195eb043676" name="backendErrorMsgFlow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="backendErrorMsgFlow" doc:id="49363a8c-dab6-48be-95b4-d5dfcd724389" >
+		<logger level="ERROR" doc:name="Logging Salesforce Error" doc:id="a72dbd9b-a648-44c6-8eba-a63b99ce632a" message='Salesforce Error :  #[error.description]'/>
+		<ee:transform doc:name="Error Message" doc:id="30760755-869d-4cc6-be5b-0d5098064205" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message" : "Salesforce Error: " ++ error.description as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

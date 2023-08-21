@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="postCartDetailsFlow" doc:id="0726b68f-3053-407b-86f8-c439d0681dc6" >
+		<choice doc:name="Check whether customerId or emailId present?" doc:id="9cbe2b9d-ba95-462e-a742-89a20b4d63c9">
+			<when expression="#[!isEmpty(payload.emailId)== true]">
+				<ee:transform doc:name="New Cart Details for guest or new user" doc:id="590494bf-6194-44b0-b74b-85aa491204e9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	customerEmail__c: payload.emailId,
+	Items__c: write(payload.Items,'application/json'),
+	Nearest_Db_Location__c: payload.Nearest_Db_Location,
+	Total_Amount__c: payload.Total_Amount,
+	Status__c: payload.Status
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="objectType"><![CDATA["cartDetails__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="New Cart Details for existing user" doc:id="8b2e2fed-1dea-4351-88de-9de01f7e5ee6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	customerId__c: payload.customerId,
+	Items__c: write(payload.Items,'application/json'),
+	Nearest_Db_Location__c: payload.Nearest_Db_Location,
+	Total_Amount__c: payload.Total_Amount,
+	Status__c: payload.Status
+}]]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="objectType"><![CDATA["cartDetails__c"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Create New Cart in Salesforce" doc:id="c0e893fa-cf78-4103-a2e6-c0692c420d0c" name="addDataInSalesforce" />
+		<logger level="INFO" doc:name="Logging Message" doc:id="ab1941e4-645e-44fa-85c2-be2d6ecb4d73" message='#[if(payload.successful==true)("message" : "Cart Created Successfully") &#10;else ("message" : " Cart already Exists")]' />
+		<ee:transform doc:name="Cart Create Response" doc:id="762e8f3d-b3cb-45fd-a1b4-0ba0709f8661" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if ( payload.successful==true ) {
+	"message": "Cart Created Successfully and items added in the cart",
+	"successful": true
+}
+else
+{
+	"message": "Cart Already Exists",
+	"successful": false
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload.successful==true) 201
+else 400]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="globalError_Handler"
+		doc:id="05c6552f-a1b1-4382-a476-96c86be27eed">
+		<on-error-continue enableNotifications="true"
+			logException="true" doc:name="On Error Continue"
+			doc:id="1712229f-ec7e-482c-9a00-1c118c43ccd0"
+			type="ERR:CUSTOMER_UPDATE_FAILED">
+			<ee:transform doc:name="Bad Request"
+				doc:id="f5f0ad32-488d-4296-8ccd-1f316bff11db">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="09c4b24d-eb1c-4c85-8317-8381d30fba4c" type="ERR:CUSTOMER_NOT_FOUND">
+				<ee:transform doc:name="Bad Request" doc:id="531a8bfa-de55-4b44-af25-a479e7b5e9a2">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+			
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4da3bfb0-ab28-4965-ac1d-e598b3b74d4a" type="ERR:PRODUCT_NOT_FOUND">
+				<ee:transform doc:name="Bad Request" doc:id="0d4700d8-9495-404b-a4eb-c11463027593" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0a50384b-0525-489b-8fa5-567a414b492f" type="ERR:ENQUIRY_NOT_FOUND">
+			<ee:transform doc:name="Transform Message" doc:id="56cc0b08-76db-4971-811f-69b05eb07bec" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="14477edb-ab68-447e-a91b-e32348246432" type="ERR:ORDER_NOT_FOUND">
+			<ee:transform doc:name="Transform Message" doc:id="e2808ac7-539a-499f-b266-1b28438f67ed" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d0d95494-a768-4b75-8a7e-f1f52f66e773" type="ERR:CART_NOT_FOUND">
+			<ee:transform doc:name="Transform Message" doc:id="3ea75b63-b51b-4622-a4b3-1b2312045c53" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue2" doc:id="fae33ad2-ff4a-46b6-874d-9a152c14d9a9" type="ERR:INVALID_COMPLAINT_QUERY_PARAM" >
+			<ee:transform doc:name="Transform Message" doc:id="59e5420d-0cfc-4af7-b7c8-3697bab82d1c" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="315784c4-d096-4125-89d8-c07f5afb9bc2" type="ERR:COMPLAINT_NOT_FOUND">
+			<ee:transform doc:name="Transform Message" doc:id="d3479627-6a05-46a5-ab85-93e94bb66097">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d12ee5ad-d6cb-4e35-86f2-99a7a3509262" type="ERR:INVALID_CART_QUERY_PARAM" >
+			<ee:transform doc:name="Transform Message" doc:id="31d54a2d-3cf0-4324-9a92-390005467b05" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad Request: " ++ error.description as String,
+	errorType: error.errorType.identifier
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[400]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

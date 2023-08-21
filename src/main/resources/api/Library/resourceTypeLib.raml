@@ -1,0 +1,45 @@
+#%RAML 1.0 Library
+traits:
+  errorResponse: !include errorResponse.raml
+
+resourceTypes:
+  salesforce-resource-type:
+    get?:
+      responses:
+        200:
+          body:
+            application/json:
+              type: <<getResponseType>>
+              example: <<getResponseExample>>
+      is: [errorResponse]
+    post?:
+      body:
+        application/json:
+          type: <<postRequestType>>
+          example: <<postrequestExample>>
+      responses:
+        201:
+          body:
+            application/json:
+              example: <<postResponseExample>>
+      is: [errorResponse]
+
+    put?:
+      body:
+        application/json:
+          type: <<putRequestType>>
+          example: <<putRequestExample>>
+      responses:
+        200:
+          body:
+            application/json:
+              example: <<putResponseExample>>
+      is: [errorResponse]
+
+    delete?:
+      responses:
+        200:
+          body:
+            application/json:
+              example: <<deleteResponseExample>>
+      is: [errorResponse]        

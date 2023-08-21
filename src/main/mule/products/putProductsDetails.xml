@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="updateProductsDetailsFlow" doc:id="165a35be-9c06-4a46-a619-80325dc41f61" >
+		<ee:transform doc:name="Product Update Information" doc:id="f339d990-93f9-488f-93df-6f732ea173f3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	("quantity__c" : payload.quantity) if(!isEmpty(payload.quantity)),
+	("price__c": payload.price) if(!isEmpty(payload.price)),
+	"compositeId__c" : attributes.queryParams.productTitle as String ++ "-" ++ attributes.queryParams.location as String 
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["ProductData__c"]]></ee:set-variable>
+				<ee:set-variable variableName="externalId" ><![CDATA["compositeId__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name=" Update Product Details in Salesforce" doc:id="d9f153cb-578b-4c7a-bb1d-5f6c0eb217e5" name="updateDataInSalesforce" />
+		<logger level="INFO" doc:name="Logging Message" doc:id="baa5b432-81d6-49a8-be46-49f4b400ed24" message='#[if(payload.successful==true)("message" : "Product Update Successfully") &#10;else ("message" : "Product Title is Wrong, Update Failed!")]' />
+		<ee:transform doc:name="Product Details Update response" doc:id="675a7ab9-a4ff-4c77-8036-898c345bf5ce" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	("message" : "Product updated Successfully") if(payload.successful==true),
+	("message" : "Product Title is Wrong, Update Failed!") if(payload.successful==false)
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload.successful==true) 200
+else 400]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

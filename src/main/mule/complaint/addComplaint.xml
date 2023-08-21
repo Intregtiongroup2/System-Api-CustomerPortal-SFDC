@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="addComplaintFlow" doc:id="09beba7f-0103-4055-ae82-d1dc57473a35" >
+		<ee:transform doc:name="Add complaint query" doc:id="95b80637-37e2-43c4-9067-481cc10aa74d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	orderId__c: payload.orderId,
+	productTitle__c: payload.productTitle,
+	quantity__c: payload.quantity,
+	customerId__c: payload.customerId,
+	complaint_category__c: payload.complaint_category,
+	description__c: payload.description,
+	status__c: "Active",
+	date_of_complaint__c: now() as String {format: "uuuu-MM-dd"}
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="objectType" ><![CDATA["complaint__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="create new complaint in salesforce" doc:id="56eb1bf6-59f8-44ef-beb6-92f16e8d074b" name="addDataInSalesforce"/>
+		<ee:transform doc:name="Complaint saved" doc:id="3b73efc5-4cd1-46f5-8cfd-6bb00815ae4d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	"message": "Complaint has been successfully saved. Your complaint ID is " ++ substring(payload.items[0].id,0,sizeOf(payload.items[0].id)-3)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

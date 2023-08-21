@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="putCartDetailsFlow" doc:id="f76ccef2-9c12-4bb9-930b-eb943ad8689d" >
+		<choice doc:name="Check whether customerId or emailId present?" doc:id="a0d4d5a6-f1b8-443b-ba09-284139845e88">
+			<when expression="#[!isEmpty(attributes.queryParams.emailId)== true]">
+				<ee:transform doc:name="Items and Total Price Update Query based on customerEmail" doc:id="da4d80a5-a6e9-4857-83e8-587ed15afd97">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	("customerId__c": payload.customerId) if(!isEmpty(payload.customerId)==true),
+	("Total_Amount__c": payload.Total_Amount) if(!isEmpty(payload.Total_Amount)==true),
+	("Items__c" : write(payload.Items, 'application/json')) if(!isEmpty(payload.Total_Amount)==true),
+	
+	"customerEmail__c" : attributes.queryParams.emailId 
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="objectType"><![CDATA["cartDetails__c"]]></ee:set-variable>
+				<ee:set-variable variableName="externalId"><![CDATA["customerEmail__c"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			</when>
+			<when expression="#[!isEmpty(attributes.queryParams.customerId)== true]">
+				<ee:transform doc:name="Items and Total Price Update Query based on customer Id" doc:id="5a112272-eaec-48c0-9407-fc67d12ce354">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"Items__c" : write(payload.Items, 'application/json'),
+	"Total_Amount__c": payload.Total_Amount,
+	"customerId__c" : attributes.queryParams.customerId 
+}]]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="objectType"><![CDATA["cartDetails__c"]]></ee:set-variable>
+						<ee:set-variable variableName="externalId"><![CDATA["customerId__c"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="ERR:INVALID_CART_QUERY_PARAM" doc:id="0fa3da4b-233b-4cca-8fdb-3717452a28b7" type="ERR:INVALID_CART_QUERY_PARAM" description="Please Provide Either CustomerId or EmailId" />
+			</otherwise>
+		</choice>
+		<flow-ref doc:name=" Update cart Details in Salesforce" doc:id="60c44e05-b3ad-446e-af76-68a176e75191" name="updateDataInSalesforce" />
+		<logger level="INFO" doc:name="Logging Response" doc:id="dd351bd9-08cc-421e-903e-e1762947deeb" message='#[if ( payload.successful==true ) (message : "Products Modified in cart Successfully")&#10;else ( message : "Cart does not Exist!")]'/>
+		<ee:transform doc:name="Cart Details Update response" doc:id="61bc4b93-11e9-406c-8dc9-423d7ba3bfe6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if ( payload.successful==true ) {
+	"message": "Cart Successfully updated",
+	"successful": true
+}else
+	{
+	"message": "Cart does not exist, Update Failed!",
+	"successful": false
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload.successful==true) 200
+else 400]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

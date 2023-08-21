@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getEnquiryFlow" doc:id="93fba012-3b56-420a-af18-bed0c264868d" >
+		<choice doc:name="Checking Weather productTitle is present or  productTitle &amp; email are present" doc:id="74db4be2-109c-4d97-a977-32249aa2a77c" >
+			<when expression="#[!isEmpty(attributes.queryParams.productTitle) and !isEmpty(attributes.queryParams.emailId)]" >
+				<ee:transform doc:name="Enquiry based on ProductTitle and email Query" doc:id="a0b134c0-885c-4801-bd8d-6e4f2ec74355" >
+					<ee:message >
+						<ee:set-payload ><![CDATA["select 	emailId__c, productTitle__c, quantity__c , Name
+from Enquiry__c where emailId__c=':emailId' and productTitle__c=':productTitle'"
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="inputParameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	emailId :attributes.queryParams.emailId,
+	productTitle :attributes.queryParams.productTitle
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Enquiry based on ProductTitle Query" doc:id="a4d13783-887a-4c5f-8458-87d49586e2f4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA["select 	emailId__c, productTitle__c, quantity__c , Name
+from Enquiry__c where productTitle__c=':productTitle'"
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="inputParameters" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	productTitle :attributes.queryParams.productTitle,
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Fetch Enquiry From Salesforce Database" doc:id="a4d57309-3518-441b-a96e-75beea333e7a" name="getDataFromSalesforce" />
+		<choice doc:name="Check weather Enquiry exsists ?" doc:id="e6e8ee5c-bc40-455b-9b4b-2e3dd7c8afea" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<logger level="ERROR" doc:name="Logging Error Message" doc:id="f32cf574-9190-47ba-93e8-84c4efea60df" message="&quot;Enquiry with :&quot;#[vars.parameters]&quot; doesn't exsist&quot;" />
+				<raise-error doc:name="Enquiry not found error" doc:id="a824c802-a489-4a5c-ae68-c0fe43c0f99b" type="ERR:ENQUIRY_NOT_FOUND" description="Enquiry doesn't exsist" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Enquiry Detailed Response" doc:id="2603f265-bf9e-407b-90ae-6dae3b46916e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(key,indexof )-> {
+	productTitle: key.productTitle__c default "",
+	quantity: key.quantity__c as Number,
+	emailId: key.emailId__c default "",
+	enquiryId: key.Name 
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

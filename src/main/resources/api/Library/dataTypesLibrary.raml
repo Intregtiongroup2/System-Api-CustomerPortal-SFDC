@@ -1,0 +1,304 @@
+#%RAML 1.0 Library
+types:
+  customerDataType:
+    type: object
+    properties:
+      customerId:
+        type: string
+        required: true
+        minLength: 7
+      emailId:
+        type: string
+        required: true
+        minLength: 7
+      firstName:
+        type: string
+        required: true
+        minLength: 3
+      lastName:
+        type: string
+        required: true
+        minLength: 3
+      gender:
+        type: string
+        required: true
+      pincode:
+        type: string
+        required: true     
+      address:
+        type: string
+        required: true
+      phoneNumber:
+        type: string
+        required: true
+      location:
+        required: true
+        enum: [Kolkata, Bangalore, Hyderabad,Mumbai]
+      savedCards:
+        type: object
+        required: false
+      cartDeatils:
+        type: object
+        required: false  
+
+  customerPutdataType:
+    type: object
+    properties:
+      address:
+        type: string
+        required: false
+      pincode:
+        type: string
+        required: false 
+      phoneNumber:
+        type: string
+        required: false
+      cardDetails:
+        type: object
+        required: false
+
+  cartDataType:          
+    type: object
+    properties:
+      emailId:
+        type: string
+        required: false
+      customerId:
+        type: string
+        required: false  
+      Items:
+        type: object
+        required: true 
+      Nearest_Db_Location:
+        type: string
+        required: true
+      Total_Amount:
+        type: number
+        required: true
+      Status:
+        type: string
+        required: false
+
+  cartPutDataType:
+    type: object
+    properties:
+      Items:
+        type: object
+        required: false 
+      Total_Amount:
+        type: number
+        required: false
+      customerId:
+        type: string
+        required: false        
+
+  orderDataType:
+    type: object
+    properties:
+       OrderId:
+         type: string
+         required: false
+       Items:
+         type: object
+         required: true
+       customerId:
+         type: string
+         required: true
+       Total_Price:
+         type: integer
+         required: true
+       Order_Date:
+         type: date-only
+         required: true
+       Payment_Mode:
+         type: string
+         required: true
+       Status:
+         type: string
+         required: true
+
+
+  orderPutDataType:
+    type: object
+    properties:
+      feedback:
+        type: object
+        required: false
+        properties:
+          productTitle:
+            type: string
+            required: true
+          Display:
+            type: string
+            required: true
+          Camera:
+            type: string
+            required: true
+          Performance:
+            type: string
+            required: true
+          Overall:
+            type: string
+            required: true
+          description:
+            type: string
+            required: true
+      deliverd_Date:
+        type: string
+        required: false
+      status:
+        type: string
+        required: false
+  
+
+  productDataType:
+    type: object
+    properties:
+      productTitle:
+        required: true
+        type: string 
+      brandName:
+        required: true
+        type: string
+      seriesName:
+        required: true
+        type: string
+      price:
+        required: true
+        type: number
+      ram:
+        required: true
+        type: string
+      rom:
+        required: true
+        type: string
+      warranty:
+        required: true
+        type: string
+      quantity:
+        required: true
+        type: number
+      location:
+        required: true
+        enum: [Kolkata, Bangalore, Hyderabad,Mumbai]  
+
+  productPutDataType:
+    type: object
+    properties:
+      quantity:
+        type: number
+        required: false
+      price:
+        type: number
+        required: false   
+
+  enquiryDataType:
+    type: object
+    properties:
+      enquiryId:
+        type: number
+        required: false
+      emailId:
+        type: string
+        required: true
+      productTitle:
+        type: string
+        required: true
+      quantity:
+        type: number
+        required: true
+
+  complaintGetDataType:
+    type: object
+    properties:
+      complaintId:
+        type: string
+        required: true
+      orderId:
+        type: string
+        required: true
+      productTitle:
+        type: string
+        required: true
+      quantity:
+        type: number
+        required: true  
+      customerId:
+         type: string
+         required: true
+      complaint_category:
+        required: true
+        enum: [Wrong_Items, Delivery_Delay, Damaged_Items]
+      description:
+        type: string
+        required: true
+        maxLength: 255
+      date_of_complaint:
+         type: date-only
+         required: true
+      action:
+        type: string
+        required: true
+      status:
+        type: string
+        required: true
+
+  complaintPostDataType:
+    type: object
+    properties:
+      orderId:
+        type: string
+        required: true
+      productTitle:
+        type: string
+        required: true
+      quantity:
+        type: number
+        required: true 
+      customerId:
+         type: string
+         required: true
+      complaint_category:
+        required: true
+        enum: [Wrong_Items, Delivery_Delay, Damaged_Items]
+      description:
+        type: string
+        required: true
+        maxLength: 255
+
+  complaintPutDataType:
+    type: object
+    properties:
+      action:
+        type: string
+        required: true
+        enum: [Refund, Replace, None]
+      status:
+        type: string
+        required: true
+        enum: [Closed]
+  healthCheckDataType:
+    type: object
+    properties:
+      apiName:
+        type: string
+        required: true
+      apiVersion:
+        type: string
+        required: true
+      server:
+        type: string
+        required: true
+      env:
+        type: string
+        required: true
+      status:
+        type: string
+        required: true
+      message:
+        type: string
+        required: true
+      details:
+        type: object
+
+

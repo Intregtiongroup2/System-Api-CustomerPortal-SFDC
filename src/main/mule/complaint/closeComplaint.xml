@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="closeComplaintFlow" doc:id="c7864cd3-d347-497b-b92f-59a40796269a" >
+		<try doc:name="Try" doc:id="ed60b0da-915d-4512-9ea9-d8292bb09cf9" >
+			<flow-ref doc:name="getComplaintDetailsFlow" doc:id="3fdf74a5-add6-4505-ad3f-2e6a3e3d1357" name="getComplaintDetailsFlow" target="complaintDetails"/>
+		</try>
+		<ee:transform doc:name="Complaint Update Information" doc:id="ba5aa3a1-6cad-4a5d-865d-71ba5b788182" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"action__c": payload.action,
+	"status__c": payload.status,
+	"Name": attributes.queryParams.complaintId
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="externalId" ><![CDATA["Name"]]></ee:set-variable>
+				<ee:set-variable variableName="objectType" ><![CDATA["complaint__c"]]></ee:set-variable>
+				<ee:set-variable variableName="complaintId" ><![CDATA[attributes.queryParams.complaintId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="update complaint Status &amp; Action for Specific complaint" doc:id="54678e8e-386f-4880-9bc1-6fb9355d4f58" name="updateDataInSalesforce"/>
+		<ee:transform doc:name="complaint closed response" doc:id="af626dc7-051c-4d6e-a9d2-0698eb8e7738" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (payload.successful==true)
+{
+	"message":"Complaint with ID " ++ vars.complaintId ++ " has been successfully closed"
+}
+else
+{
+	"message":"Error occoured while trying to close complaint with ID " ++ vars.complaintId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
