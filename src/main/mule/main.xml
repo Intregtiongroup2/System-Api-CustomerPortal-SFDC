@@ -60,4 +60,30 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 	<flow name="delete:\enquiry:sys-cp-sfdc-config" doc:id="825959bf-0c94-465c-9f8f-cf0665039627" >
 		<flow-ref doc:name="deleteEnquiryFlow" doc:id="b40209eb-2ceb-4269-8785-d77f762f5de1" name="deleteEnquiryFlow"/>
 	</flow>
+<<<<<<< Updated upstream
+=======
+	<flow name="get:\ping:sys-cp-sfdc-config">
+		<ee:transform doc:name="Health Check" doc:id="32bc1389-ad0b-45d2-9f3b-130daa26b82e">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  module: "${ping.apiName}",
+  projectVersion: "${ping.projectVersion}",
+  apiVersion: "${ping.apiVersion}",
+  env: "${ping.env}",
+  status: "${ping.status}",
+  server: "${ping.server}",
+  serviceHealth: {
+		serviceType: "${ping.serviceType}",
+		status: "${ping.statusMessage}",
+		message: "${ping.message}"
+	}
+  }]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+    
+</flow>
+>>>>>>> Stashed changes
 </mule>
