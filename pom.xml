@@ -14,7 +14,11 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<app.runtime>4.4.0-20220824</app.runtime>
+<<<<<<< Updated upstream
 		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
+=======
+		<mule.maven.plugin.version>3.8.2</mule.maven.plugin.version>
+>>>>>>> Stashed changes
 		<munit.version>2.3.13</munit.version>
 	</properties>
 
@@ -117,6 +121,15 @@
 			<version>2.0.2</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+<<<<<<< Updated upstream
+=======
+		<dependency>
+			<groupId>com.mulesoft.modules</groupId>
+			<artifactId>mule-cryptography-module</artifactId>
+			<version>1.3.14</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+>>>>>>> Stashed changes
 	</dependencies>
 
 	<repositories>

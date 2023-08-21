@@ -7,7 +7,11 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="getOrderDetailsFlow" doc:id="2d739761-b6dc-417c-8d52-ad336eba8d0e" >
 		<ee:transform doc:name="Order Details Query" doc:id="092d92e2-84d5-4c62-9b80-acd57a6463cd" >
 			<ee:message >
+<<<<<<< Updated upstream
 				<ee:set-payload ><![CDATA["select 	Name, customerId__c, items__c, order_date__c, payment_Mode__c, total_Price__c, status__c, deliverd_Date__c
+=======
+				<ee:set-payload ><![CDATA["select 	Name, customerId__c, items__c, order_date__c, payment_Mode__c, total_Price__c, status__c, deliverd_Date__c, feedback__c
+>>>>>>> Stashed changes
 from orderDetails__c where Name = ':orderId'"
 ]]></ee:set-payload>
 			</ee:message>
@@ -40,7 +44,13 @@ output application/json
     Order_Date: payload[0].order_date__c default "",
     Payment_Mode: payload[0].payment_Mode__c default "",
     Status: payload[0].status__c default "",
+<<<<<<< Updated upstream
     (Delivered_Date: payload[0].deliverd_Date__c) if(payload[0].status__c == "Delivered")
+=======
+    (Delivered_Date: payload[0].deliverd_Date__c) if(payload[0].status__c == "Delivered"),
+    (Feedback: read(payload[0].feedback__c default "" as String,"application/json")) if(!isEmpty(payload[0].feedback__c))
+    
+>>>>>>> Stashed changes
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>

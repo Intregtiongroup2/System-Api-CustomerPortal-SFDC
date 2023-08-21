@@ -1,5 +1,6 @@
 [
   {
+<<<<<<< Updated upstream
     "Product_Title": "REALME-NARZO-N55-6GB-64GB",
     "Brand_Name": "Realme",
     "Series_Name": "Narzo-N55",
@@ -28,5 +29,49 @@
     "Brand_Name": "Samsung",
     "Series_Name": "Galaxy",
     "Price": 22000.0
+=======
+    "productTitle": "SAMSUNG-A2-4GB-64GB",
+    "brandName": "Samsung",
+    "seriesName": "A2",
+    "ram": "4GB",
+    "rom": "64Gb",
+    "price": 15000.0,
+    "warranty": "1-Years",
+    "quantity": 12.0,
+    "location": "Kolkata"
+  },
+  {
+    "productTitle": "SAMSUNG-A2-4GB-64GB",
+    "brandName": "Samsung",
+    "seriesName": "A2",
+    "ram": "4GB",
+    "rom": "64Gb",
+    "price": 15000.0,
+    "warranty": "1-Years",
+    "quantity": 1.0,
+    "location": "Bangalore"
+  },
+  {
+    "productTitle": "SAMSUNG-A2-4GB-64GB",
+    "brandName": "Samsung",
+    "seriesName": "A2",
+    "ram": "4GB",
+    "rom": "64Gb",
+    "price": 15000.0,
+    "warranty": "1-Years",
+    "quantity": 1.0,
+    "location": "Hyderabad"
+  },
+  {
+    "productTitle": "SAMSUNG-A2-4GB-64GB",
+    "brandName": "Samsung",
+    "seriesName": "A2",
+    "ram": "4GB",
+    "rom": "64Gb",
+    "price": 15000.0,
+    "warranty": "1-Years",
+    "quantity": 39.0,
+    "location": "Mumbai"
+>>>>>>> Stashed changes
   }
 ]

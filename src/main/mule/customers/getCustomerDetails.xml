@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<<<<<<< Updated upstream
 <mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	
+=======
+<mule xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd">
+	
+	<crypto:pgp-config name="Crypto_Pgp_Decrypt" doc:name="Crypto Pgp" doc:id="883bc995-eb2a-4978-a00d-7418b58df997" privateKeyring="prtkey.gpg" >
+		<crypto:pgp-key-infos >
+			<crypto:pgp-asymmetric-key-info keyId="prt123" fingerprint="9E354568A8BA4FA2" passphrase="mulesoft" />
+		</crypto:pgp-key-infos>
+	</crypto:pgp-config>
+>>>>>>> Stashed changes
 	<flow name="getCustomerDetailsFlow" doc:id="8c9a0a0f-784e-4657-9011-544878c85e43">
 		<ee:transform doc:name="Customer Details Query" doc:id="c3042038-dc67-4b23-98bf-f3a0d512f544" >
 			<ee:message >
@@ -28,7 +43,13 @@ from CustomerDetails__c where Name = ':customerId'"]]></ee:set-payload>
 				<raise-error doc:name="Customer Not Found" doc:id="9c9eded5-9faa-423d-aabc-7677ab2083be" type="ERR:CUSTOMER_NOT_FOUND" description="Customer Details Not Found" />
 			</when>
 			<otherwise>
+<<<<<<< Updated upstream
 				<ee:transform doc:name="Customer Details Response" doc:id="3d1f8e1b-bf18-4d38-ab08-931ac4ccb429">
+=======
+				<choice doc:name="checking cradDeatls exists?" doc:id="3fb4a812-8809-45f4-84f8-f09bedb063a2">
+						<when expression="#[isEmpty(read(payload[0].cardDetails__c))== true]">
+						<ee:transform doc:name="Customer Details Response" doc:id="3d1f8e1b-bf18-4d38-ab08-931ac4ccb429">
+>>>>>>> Stashed changes
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -47,7 +68,42 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+<<<<<<< Updated upstream
 			</otherwise>
+=======
+					</when>
+					<otherwise >
+						<set-variable value="#[{} as Object]" doc:name="cradDetails" doc:id="4e45617d-3fcd-45df-bc6f-b6efd6cd2db7" variableName="cradDetails" />
+						<foreach doc:name="For Each" doc:id="c41633ee-1bfc-4350-84fc-85b7eb2015db" collection="#[((read(payload[0].cardDetails__c)) pluck ((value, key, index) -&gt; value))]">
+					<crypto:pgp-decrypt doc:name="Pgp decrypt CardNumber" doc:id="1681af79-7d14-47ff-9d87-0cfc73ef37f9" config-ref="Crypto_Pgp_Decrypt" target="cardNumber">
+								<crypto:content ><![CDATA[#[payload.cardNumber]]]></crypto:content>
+							</crypto:pgp-decrypt>
+					<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;vars.cradDetails ++ {&#10;	(vars.counter): {&#10;		"bankName": payload.bankName,&#10;		"cardNumber": read(vars.cardNumber)&#10;	}&#10;}]' doc:name="cradDetails" doc:id="d1aa980c-6764-41fa-b54b-63eb12e2d201" variableName="cradDetails" />
+				</foreach>
+						<ee:transform doc:name="Customer Details Response" doc:id="9df4cff3-17b8-467e-b8fc-baa8827666b3" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerId: payload[0].Name,
+	emailId: payload[0].emailId__c default "",
+	firstName: payload[0].firstName__c default "",
+	lastName: payload[0].lastName__c default "",
+	gender: payload[0].gender__c default "",
+	address: payload[0].address__c default "",
+	pincode: payload[0].pincode__c default "",
+	phoneNumber: payload[0].phoneNumber__c default "",
+	location: payload[0].location__c default "",
+	savedCards: vars.cradDetails
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+					</choice>
+			
+</otherwise>
+>>>>>>> Stashed changes
 		</choice>
 	</flow>
 	</mule>

@@ -34,7 +34,11 @@ import * from dw::core::Strings
 output application/json
 ---
 {
+<<<<<<< Updated upstream
 	"message": "Complaint has been successfully saved. Your complaint ID is " ++ substringBeforeLast(payload.items[0].id,"AAR")
+=======
+	"message": "Complaint has been successfully saved. Your complaint ID is " ++ substring(payload.items[0].id,0,sizeOf(payload.items[0].id)-3)
+>>>>>>> Stashed changes
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

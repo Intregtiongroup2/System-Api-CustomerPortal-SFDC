@@ -13,5 +13,9 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 	<configuration-properties doc:name="Configuration properties" doc:id="152a6480-afd1-4d88-b87f-c15f89bca6da" file="config.yaml" />
 	<configuration doc:name="Configuration" doc:id="faf807b5-ddd7-44c5-8b4a-d86d8f8db4f8" defaultErrorHandler-ref="globalError_Handler" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="4c9b41c6-caf8-48e4-b0d9-ad71ec647866" file="secureConfig.yaml" key="${secure.decryptionKey}" />
+<<<<<<< Updated upstream
 	<api-gateway:autodiscovery apiId="18836390" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="72473601-8118-40a1-8f3a-d373b97609d3" flowRef="router" />
+=======
+	<api-gateway:autodiscovery apiId="${autodiscovery.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="72473601-8118-40a1-8f3a-d373b97609d3" flowRef="router" />
+>>>>>>> Stashed changes
 </mule>
